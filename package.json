@@ -1,0 +1,37 @@
+{
+    "name": "chrome-css-injector",
+    "version": "0.1.0",
+    "description": "CSS injection utilities for Chrome extensions — inject styles, theme pages, toggle stylesheets, scoped injection, and dark mode toggle for MV3.",
+    "author": "Zovo <hello@zovo.one>",
+    "license": "MIT",
+    "keywords": [
+        "chrome-extension",
+        "css",
+        "inject",
+        "style",
+        "theme",
+        "dark-mode",
+        "manifest-v3",
+        "browser-extension",
+        "content-script"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/theluckystrike/chrome-css-injector.git"
+    },
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "files": [
+        "dist",
+        "README.md",
+        "LICENSE"
+    ],
+    "scripts": {
+        "build": "tsc",
+        "prepublishOnly": "npm run build"
+    },
+    "devDependencies": {
+        "@types/chrome": "^0.0.260",
+        "typescript": "^5.3.3"
+    }
+}
