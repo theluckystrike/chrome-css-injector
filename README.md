@@ -36,14 +36,15 @@ npm install chrome-css-injector
 
 For more comprehensive examples, see the [examples](./examples/) directory:
 
-- **[quickstart.js](./examples/quickstart.js)** - Complete working examples including:
+- **[basic-usage.js](./examples/basic-usage.js)** - Complete working examples including:
   - Basic CSS injection into tabs
-  - Toggle styles on/off
+  - Inject CSS from external files
+  - Toggle styles on/off (useful for dark mode)
   - Using built-in static helpers (DARK_MODE, fontCSS, hideCSS)
   - Injecting into all matching tabs
   - Removing injected styles
-  - Background script integration
   - Content script integration
+  - Background script integration
 
 ## Usage
 
