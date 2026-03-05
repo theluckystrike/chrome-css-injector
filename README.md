@@ -32,6 +32,19 @@ chrome-css-injector provides utilities to inject CSS into web pages or extension
 npm install chrome-css-injector
 ```
 
+## Examples
+
+For more comprehensive examples, see the [examples](./examples/) directory:
+
+- **[quickstart.js](./examples/quickstart.js)** - Complete working examples including:
+  - Basic CSS injection into tabs
+  - Toggle styles on/off
+  - Using built-in static helpers (DARK_MODE, fontCSS, hideCSS)
+  - Injecting into all matching tabs
+  - Removing injected styles
+  - Background script integration
+  - Content script integration
+
 ## Usage
 
 ### Inject into Page
