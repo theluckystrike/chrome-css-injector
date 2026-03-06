@@ -1,169 +1,129 @@
 # chrome-css-injector
 
-[![npm version](https://img.shields.io/npm/v/chrome-css-injector)](https://npmjs.com/package/chrome-css-injector)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://www.typescriptlang.org/)
-[![Chrome Web Extension](https://img.shields.io/badge/Chrome-Web%20Extension-orange.svg)](https://developer.chrome.com/docs/extensions/)
-[![CI Status](https://github.com/theluckystrike/chrome-css-injector/actions/workflows/ci.yml/badge.svg)](https://github.com/theluckystrike/chrome-css-injector/actions)
-[![Discord](https://img.shields.io/badge/Discord-Zovo-blueviolet.svg?logo=discord)](https://discord.gg/zovo)
-[![Website](https://img.shields.io/badge/Website-zovo.one-blue)](https://zovo.one)
-[![GitHub Stars](https://img.shields.io/github/stars/theluckystrike/chrome-css-injector?style=social)](https://github.com/theluckystrike/chrome-css-injector)
+CSS injection utilities for Chrome extensions built on Manifest V3. Inject inline styles or CSS files into tabs, toggle them on and off by ID, broadcast styles to all matching tabs, and generate common CSS patterns like dark mode, custom fonts, and element hiding.
 
-> Inject and manage CSS styles in Chrome extension pages.
+Written in TypeScript. Ships type definitions.
 
-**chrome-css-injector** provides utilities to inject CSS into web pages or extension popups, with support for dynamic updates and removal. Part of the Zovo Chrome extension utilities.
 
-Part of the [Zovo](https://zovo.one) developer tools family.
+INSTALL
 
-## Overview
-
-chrome-css-injector provides utilities to inject CSS into web pages or extension popups, with support for dynamic updates and removal.
-
-## Features
-
-- ✅ **CSS Injection** - Inject styles into pages
-- ✅ **Frame Support** - Inject into specific frames
-- ✅ **Style Management** - List, remove, clear styles
-- ✅ **TypeScript Support** - Full type definitions included
-
-## Installation
-
-```bash
+```
 npm install chrome-css-injector
 ```
 
-## Examples
 
-For more comprehensive examples, see the [examples](./examples/) directory:
+MANIFEST PERMISSIONS
 
-- **[basic-usage.js](./examples/basic-usage.js)** - Complete working examples including:
-  - Basic CSS injection into tabs
-  - Inject CSS from external files
-  - Toggle styles on/off (useful for dark mode)
-  - Using built-in static helpers (DARK_MODE, fontCSS, hideCSS)
-  - Injecting into all matching tabs
-  - Removing injected styles
-  - Content script integration
-  - Background script integration
-
-## Usage
-
-### Inject into Page
-
-```javascript
-import { CssInjector } from 'chrome-css-injector';
-
-const injector = new CssInjector();
-
-// Inject CSS into page
-await injector.inject(`
-  .my-extension-class {
-    background: blue;
-    color: white;
-  }
-`, { runAt: 'document_end' });
-```
-
-### Inject into Frame
-
-```javascript
-await injector.injectIntoFrame(frameId, tabId, `
-  .highlight {
-    background: yellow;
-  }
-`);
-```
-
-### Manage Injected Styles
-
-```javascript
-// List all injected styles
-const styles = await injector.list();
-
-// Remove specific style
-await injector.remove(styleId);
-
-// Remove all styles
-await injector.clear();
-```
-
-## API
-
-### Methods
-
-- `inject(css, options)` - Inject CSS into page
-- `injectIntoFrame(frameId, tabId, css)` - Inject into frame
-- `list()` - List injected styles
-- `remove(id)` - Remove style by ID
-- `clear()` - Remove all styles
-
-### Options
-
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| runAt | string | document_idle | When to inject |
-| matchAboutBlank | boolean | false | Inject into about:blank |
-| frameId | number | null | Specific frame |
-
-## Manifest
+Your extension manifest needs the `scripting` permission and appropriate host permissions.
 
 ```json
 {
-  "permissions": ["css"]
+  "permissions": ["scripting"],
+  "host_permissions": ["<all_urls>"]
 }
 ```
 
-## Browser Support
 
-- Chrome 90+
+API
 
-## Contributing
+The library exports a single class, `CSSInjector`.
 
-Contributions are welcome! Please follow these steps:
+```js
+import { CSSInjector } from 'chrome-css-injector';
 
-1. **Fork** the repository
-2. **Create** a feature branch: `git checkout -b feature/css-improvement`
-3. **Make** your changes
-4. **Test** your changes: `npm test`
-5. **Commit** your changes: `git commit -m 'Add new feature'`
-6. **Push** to the branch: `git push origin feature/css-improvement`
-7. **Submit** a Pull Request
+const injector = new CSSInjector();
+```
 
-### Development Setup
+INSTANCE METHODS
 
-```bash
-# Clone the repository
+`inject(tabId, css, id?)` injects a CSS string into the given tab. If you pass an optional `id`, the injector tracks it internally so you can toggle it later. Returns a promise.
+
+```js
+await injector.inject(tab.id, 'body { background: #1a1a1a; color: #eee; }', 'dark-bg');
+```
+
+`injectFile(tabId, file)` injects a CSS file from your extension directory into the given tab. The path is relative to the extension root.
+
+```js
+await injector.injectFile(tab.id, 'styles/content.css');
+```
+
+`remove(tabId, css)` removes previously injected CSS from the given tab. You must pass the exact same CSS string that was injected.
+
+```js
+await injector.remove(tab.id, 'body { background: #1a1a1a; color: #eee; }');
+```
+
+`injectAll(css, urlPattern?)` injects CSS into every open tab matching the URL pattern. Defaults to `<all_urls>`. Returns the number of tabs that received the injection.
+
+```js
+const count = await injector.injectAll('a { text-decoration: underline; }', 'https://*.github.com/*');
+```
+
+`toggle(tabId, css, id)` flips a style on or off. If the `id` is currently tracked as injected, the style is removed and the method returns `false`. Otherwise the style is injected and it returns `true`.
+
+```js
+const isOn = await injector.toggle(tab.id, CSSInjector.DARK_MODE, 'dark-mode');
+```
+
+
+STATIC HELPERS
+
+`CSSInjector.DARK_MODE` is a ready-made CSS string that inverts page colors while preserving images and video.
+
+```js
+await injector.inject(tab.id, CSSInjector.DARK_MODE, 'dark');
+```
+
+`CSSInjector.fontCSS(fontFamily, url)` returns a CSS string that loads a custom font via `@font-face` and applies it to the body.
+
+```js
+const css = CSSInjector.fontCSS('Inter', 'https://example.com/inter.woff2');
+await injector.inject(tab.id, css);
+```
+
+`CSSInjector.hideCSS(selectors)` takes an array of CSS selectors and returns a CSS string that sets `display: none !important` on each one.
+
+```js
+const css = CSSInjector.hideCSS(['.ads-container', '#cookie-banner', '.promo-popup']);
+await injector.inject(tab.id, css);
+```
+
+
+USAGE IN A BACKGROUND SCRIPT
+
+```js
+import { CSSInjector } from 'chrome-css-injector';
+
+const injector = new CSSInjector();
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === 'toggle-dark') {
+    injector.toggle(message.tabId, CSSInjector.DARK_MODE, 'dark-mode')
+      .then(enabled => sendResponse({ enabled }))
+      .catch(err => sendResponse({ error: err.message }));
+    return true;
+  }
+});
+```
+
+
+DEVELOPMENT
+
+```
 git clone https://github.com/theluckystrike/chrome-css-injector.git
 cd chrome-css-injector
-
-# Install dependencies
 npm install
-
-# Run tests
-npm test
-
-# Build
 npm run build
 ```
 
-## See Also
+The build step runs `tsc` and outputs to `dist/`.
 
-### Related Zovo Repositories
 
-- [zovo-extension-template](https://github.com/theluckystrike/zovo-extension-template) - Boilerplate for building privacy-first Chrome extensions
-- [zovo-types-webext](https://github.com/theluckystrike/zovo-types-webext) - Comprehensive TypeScript type definitions for browser extensions
+LICENSE
 
-### Zovo Chrome Extensions
-
-- [Zovo Tab Manager](https://chrome.google.com/webstore/detail/zovo-tab-manager) - Manage tabs efficiently
-- [Zovo Focus](https://chrome.google.com/webstore/detail/zovo-focus) - Block distractions
-
-Visit [zovo.one](https://zovo.one) for more information.
-
-## License
-
-MIT - [Zovo](https://zovo.one)
+MIT. See LICENSE file.
 
 ---
 
-Built by [Zovo](https://zovo.one)
+Part of the Zovo family of Chrome extension tools. Visit zovo.one for more.
